@@ -14,7 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -39,9 +38,8 @@ public class Authority implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @NotNull
-    @Size(max = 50)
     @Id
-    @Column(length = 50)
+    @Column(length = 50,name = "name")
     private RoleName name;
 
 }

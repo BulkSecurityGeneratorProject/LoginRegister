@@ -1,21 +1,29 @@
 package com.aew.ManagmentAccount.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
-
 import java.nio.charset.StandardCharsets;
 
 import javax.mail.internet.MimeMessage;
 
 import com.aew.ManagmentAccount.domain.User;
+import com.aew.ManagmentAccount.repository.UserRepository;
+import com.aew.ManagmentAccount.util.RandomUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class MailService {
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private final Logger log = LoggerFactory.getLogger(MailService.class);
 
@@ -26,7 +34,6 @@ public class MailService {
 
     public void sendEmail(String to, String subject, String content) {
 
-        // Prepare message using a Spring helper
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, false, StandardCharsets.UTF_8.name());
@@ -52,7 +59,9 @@ public class MailService {
 
     public void sendPasswordMail(User user) {
         log.debug("Sending password reset email to '{}'", user.getEmail());
-        sendEmail(user.getEmail(), "mail/passwordResetEmail", "Su password es: " + user.getPassword());
+        String passwordRandom = RandomUtil.generatePassword();
+        user.setPassword(passwordEncoder.encode(passwordRandom));
+        userRepository.save(user);
+        sendEmail(user.getEmail(), "mail/passwordResetEmail", "Su password es: " + passwordRandom);
     }
-
 }
