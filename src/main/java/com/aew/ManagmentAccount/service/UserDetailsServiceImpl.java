@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
+    @Autowired
+    private MailService mailService;
 
     /**
      * Loads a user based on username or login id.
@@ -42,7 +45,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private UserDetails createSpringSecurityUser(String login, User user) {
         if (!user.isActivated()) {
-            throw new UserNotActivatedException("User " + login + " was not activated");
+            mailService.sendActivationEmail(user);
+            throw new UserNotActivatedException("User " + login + " was not activated, check your mail");
+
         }
         return UserPrinciple.build(user);
     }

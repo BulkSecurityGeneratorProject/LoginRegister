@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -118,8 +119,17 @@ public class UserController {
         }
         User updatedUser = userRepository.save(user);
         return new ResponseEntity<User>(updatedUser, HttpStatus.OK);
-        // return ResponseEntity(updatedUser,
-        // HeaderUtidl.createAlert("userManagement.updated", user.getLogin()));
+    }
+
+    @GetMapping("/user/checkUsernameAvailability")
+    public Boolean checkUsernameAvailability(@RequestParam(value = "login") String login) {
+        return !userRepository.existsByLogin(login);
+
+    }
+
+    @GetMapping("/user/checkEmailAvailability")
+    public Boolean checkEmailAvailability(@RequestParam(value = "email") String email) {
+        return !userRepository.existsByEmail(email);
     }
 
     /**
@@ -163,6 +173,7 @@ public class UserController {
     @DeleteMapping("/users/{login}")
     @PreAuthorize("hasRole(\"" + "ROLE_ADMIN" + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable String login) {
+        // Not neccesary validate if exists user.
         log.debug("REST request to delete User: {}", login);
         userService.deleteUser(login);
         return ResponseEntity.ok().headers(HeaderUtil.createAlert("userManagement.deleted", login)).build();

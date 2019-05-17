@@ -9,7 +9,9 @@ import java.util.Set;
 import com.aew.ManagmentAccount.domain.Authority;
 import com.aew.ManagmentAccount.domain.RoleName;
 import com.aew.ManagmentAccount.domain.User;
+import com.aew.ManagmentAccount.error.EmailAlreadyUsedException;
 import com.aew.ManagmentAccount.error.InvalidPasswordException;
+import com.aew.ManagmentAccount.error.LoginAlreadyUsedException;
 import com.aew.ManagmentAccount.payload.PasswordChangeForm;
 import com.aew.ManagmentAccount.payload.SignUpForm;
 import com.aew.ManagmentAccount.repository.AuthorityRepository;
@@ -53,29 +55,25 @@ public class UserServiceImpl implements UserService {
         userRepository.findByLogin(signUpForm.getUsername().toLowerCase()).ifPresent(existingUser -> {
             boolean removed = removeNonActivatedUser(existingUser);
             if (!removed) {
-                // throw new LoginAlreadyUsedException();
+                throw new LoginAlreadyUsedException();
             }
         });
         userRepository.findByEmailIgnoreCase(signUpForm.getEmail()).ifPresent(existingUser -> {
             boolean removed = removeNonActivatedUser(existingUser);
             if (!removed) {
-                // throw new EmailAlreadyUsedException();
+                throw new EmailAlreadyUsedException();
             }
         });
         User newUser = new User();
-        String encryptedPassword = passwordEncoder.encode(signUpForm.getPassword());
         newUser.setLogin(signUpForm.getUsername().toLowerCase());
-        // new user gets initially a generated password
-        newUser.setPassword(encryptedPassword);
+        newUser.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
         newUser.setFirstName(signUpForm.getFirstName());
         newUser.setLastName(signUpForm.getLastName());
         newUser.setEmail(signUpForm.getEmail().toLowerCase());
-        // new user is not active
         newUser.setActivated(false);
-        // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Authority> authorities = new HashSet<>();
-        authorityRepository.findByName(RoleName.ROLE_USER).ifPresent(authorities::add);
+        authorityRepository.findByName(RoleName.ROLE_ANONYMOUS).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
@@ -96,14 +94,14 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * activate account user for the registration key.
+     * Activate account user for the registration key.
      * 
      * @param key key
      * @return User activated user
      */
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
-        return userRepository.findOneByActivationKey(key).map(user -> {
+        return userRepository.findByActivationKey(key).map(user -> {
             user.setActivated(true);
             user.setActivationKey(null);
             log.debug("Activated user: {}", user);
@@ -112,8 +110,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Update basic information (first name, last name, email, language) for the
-     * current user.
+     * Update basic information (first name, last name, email) for the current user.
      *
      * @param firstName first name of user
      * @param lastName  last name of user
@@ -167,7 +164,7 @@ public class UserServiceImpl implements UserService {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
-        userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(1, ChronoUnit.DAYS))
+        userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
                 .forEach(user -> {
                     log.debug("Deleting not activated user {}", user.getLogin());
                     userRepository.delete(user);
@@ -186,6 +183,6 @@ public class UserServiceImpl implements UserService {
      * @return Page<User> return a page with list of user.
      */
     public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAllUsers(pageable);
+        return userRepository.findAll(pageable);
     }
 }

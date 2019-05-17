@@ -77,9 +77,16 @@ public class AccountController {
      * 
      * @param loginForm
      * @return JwtResponse Token para poder usar los demas endpoints del controlador
+     * @throws UsersNotFoundException
      */
     @PostMapping("/signin")
-    public ResponseEntity<JwtResponse> authorize(@Valid @RequestBody LoginForm loginForm) {
+    public ResponseEntity<JwtResponse> authorize(@Valid @RequestBody LoginForm loginForm)
+            throws UsersNotFoundException {
+
+        Optional<User> user = userRepository.findByLogin(loginForm.getUsername());
+        if (!user.isPresent()) {
+            throw new UsersNotFoundException("User could not be found");
+        }
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 loginForm.getUsername(), loginForm.getPassword());
@@ -137,6 +144,7 @@ public class AccountController {
      * @return the login if the user is authenticated
      */
     @GetMapping("/authenticate")
+    // @PostAuthorize("authenticated")
     public String isAuthenticated(HttpServletRequest request) {
         log.debug("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
@@ -199,7 +207,8 @@ public class AccountController {
     }
 
     /**
-     * POST /account/reset-password/: Send an email with the password of the user
+     * POST /account/send-reset-password/: Send an email with the password of the
+     * user
      *
      * @param mail the mail of the user
      * @throws EmailNotFoundException 400 (Bad Request) if the email address is not

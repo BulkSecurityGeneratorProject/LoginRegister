@@ -45,6 +45,7 @@ public class DemoApplication implements ApplicationRunner {
 		authorityRepository.save(new Authority(RoleName.ROLE_MOD));
 		authorityRepository.save(new Authority(RoleName.ROLE_ADMIN));
 		authorityRepository.save(new Authority(RoleName.ROLE_USER));
+		authorityRepository.save(new Authority(RoleName.ROLE_ANONYMOUS));
 		Set<Authority> roles = new HashSet<>();
 		roles.add(new Authority(RoleName.ROLE_ADMIN));
 		User admin = User.builder().login("admin").email("adrianwilgenhof@gmail.com").password(encoder.encode("123456"))
