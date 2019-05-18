@@ -16,11 +16,11 @@ public class SignUpForm {
 
     @NotBlank
     @Size(min = 3, max = 50)
-    private String firstName;
+    private String name;
 
     @NotBlank
     @Size(min = 3, max = 50)
-    private String lastName;
+    private String lastname;
 
     @NotBlank
     @Size(min = 3, max = 50)

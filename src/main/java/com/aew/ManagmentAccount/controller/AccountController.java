@@ -96,7 +96,9 @@ public class AccountController {
         String jwt = jwtProvider.generateJwtToken(authentication);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Autorizacion", "Bearer " + jwt);
-        return new ResponseEntity<>(new JwtResponse(jwt), httpHeaders, HttpStatus.OK);
+        return ResponseEntity.ok(new JwtResponse(jwt));
+        // return new ResponseEntity<>(new JwtResponse(jwt), httpHeaders,
+        // HttpStatus.OK);
     }
 
     /**

@@ -67,8 +67,8 @@ public class UserServiceImpl implements UserService {
         User newUser = new User();
         newUser.setLogin(signUpForm.getUsername().toLowerCase());
         newUser.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
-        newUser.setFirstName(signUpForm.getFirstName());
-        newUser.setLastName(signUpForm.getLastName());
+        newUser.setFirstName(signUpForm.getName());
+        newUser.setLastName(signUpForm.getLastname());
         newUser.setEmail(signUpForm.getEmail().toLowerCase());
         newUser.setActivated(false);
         newUser.setActivationKey(RandomUtil.generateActivationKey());

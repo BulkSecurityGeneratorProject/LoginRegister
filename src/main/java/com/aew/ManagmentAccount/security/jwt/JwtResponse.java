@@ -7,11 +7,11 @@ import lombok.Setter;
 @Getter
 public class JwtResponse {
 
-    private String token;
+    private String accessToken;
     private String type = "Bearer";
 
     public JwtResponse(String accessToken) {
-        this.token = accessToken;
+        this.accessToken = accessToken;
     }
 
 }
